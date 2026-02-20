@@ -1839,10 +1839,9 @@ nl_status (char *fmt, ...)	/* use this one with X-windows programs to
 /**************************************************************/
 
 static int
-nl_writen (fd, ptr, nbytes)	/* use for writing n characters to a socket */
-     register int fd;
-     register char *ptr;
-     register int nbytes;
+nl_writen (register int fd,
+	   register char *ptr,
+	   register int nbytes)	/* use for writing n characters to a socket */
 {
     int       nleft, nwritten;
     nleft = nbytes;
@@ -2211,4 +2210,3 @@ NetLoggerFastWrite (NL_Handle * lp, char *keyword, char *fmt, ...)
     return rval;
 }
 #endif /* NOT_NEEDED */
-
