@@ -19,7 +19,7 @@ BSDLIBS    =  -L/usr/lib -lz -pthread
 LNXLIBS32  =  -lnsl -lpthread -lrt -lz -lcrypto
 LNXLIBS64  =  -lnsl -lpthread -lrt -lz -lcrypto
 
-MACLIBS    =  -dynamic -L/usr/lib -lz -lpthread -lcrypto
+MACLIBS    =  -dynamic -L/usr/lib -lz -lpthread
 
 SUNLIBSA   =  /usr/local/lib/libz.a -lposix4 -lsocket -lnsl -lpthread
 SUNLIBS    =  -L/usr/lib -lz -lposix4 -lsocket -lnsl -lpthread
@@ -218,13 +218,26 @@ makeLinuxx86_64 makeLinuxaarch64:
 	LIBS="$(LNXLIBS64)"
 
 Darwin:
-	@MACOSX_DEPLOYMENT_TARGET=10.11;\
+	@MACOSX_DEPLOYMENT_TARGET=10.11; \
+	OPENSSL_CFLAGS="$${OPENSSL_CFLAGS}"; \
+	OPENSSL_LIBS="$${OPENSSL_LIBS}"; \
+	if [ -z "$$OPENSSL_CFLAGS" ]; then OPENSSL_CFLAGS=`pkg-config --cflags openssl 2>/dev/null || true`; fi; \
+	if [ -z "$$OPENSSL_LIBS"   ]; then OPENSSL_LIBS=`pkg-config --libs openssl 2>/dev/null || true`; fi; \
+	if [ -z "$$OPENSSL_CFLAGS" ] && [ -d /opt/homebrew/opt/openssl@3/include ]; then OPENSSL_CFLAGS="-I/opt/homebrew/opt/openssl@3/include"; fi; \
+	if [ -z "$$OPENSSL_LIBS"   ] && [ -d /opt/homebrew/opt/openssl@3/lib     ]; then OPENSSL_LIBS="-L/opt/homebrew/opt/openssl@3/lib -lcrypto"; fi; \
+	if [ -z "$$OPENSSL_CFLAGS" ] && [ -d /usr/local/opt/openssl@3/include     ]; then OPENSSL_CFLAGS="-I/usr/local/opt/openssl@3/include"; fi; \
+	if [ -z "$$OPENSSL_LIBS"   ] && [ -d /usr/local/opt/openssl@3/lib         ]; then OPENSSL_LIBS="-L/usr/local/opt/openssl@3/lib -lcrypto"; fi; \
+	if [ -z "$$OPENSSL_CFLAGS" ] && [ -d /opt/homebrew/opt/openssl/include    ]; then OPENSSL_CFLAGS="-I/opt/homebrew/opt/openssl/include"; fi; \
+	if [ -z "$$OPENSSL_LIBS"   ] && [ -d /opt/homebrew/opt/openssl/lib        ]; then OPENSSL_LIBS="-L/opt/homebrew/opt/openssl/lib -lcrypto"; fi; \
+	if [ -z "$$OPENSSL_CFLAGS" ] && [ -d /usr/local/opt/openssl/include        ]; then OPENSSL_CFLAGS="-I/usr/local/opt/openssl/include"; fi; \
+	if [ -z "$$OPENSSL_LIBS"   ] && [ -d /usr/local/opt/openssl/lib            ]; then OPENSSL_LIBS="-L/usr/local/opt/openssl/lib -lcrypto"; fi; \
+	if [ -z "$$OPENSSL_LIBS"   ]; then OPENSSL_LIBS="-lcrypto"; fi; \
 	make $(MKPARMS)  \
 	CC=$(MACCC) \
 	BB=$(MACcc) \
 	CFLAGS="$(ENVCFLAGS) $(MACOPT) $(OPT)" \
-	INCLUDE="$(ENVINCLUDE)" \
-	LIBS="$(MACLIBS)" \
+	INCLUDE="$(ENVINCLUDE) $$OPENSSL_CFLAGS" \
+	LIBS="$(MACLIBS) $$OPENSSL_LIBS" \
 	MD5HEADER=bbcp_MD5_openssl.h \
 	OBJMD5="$(OBJDIR)/bbcp_MD5_openssl.o"
 
