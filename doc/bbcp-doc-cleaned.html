@@ -1,0 +1,1628 @@
+<html>
+  <head>
+    <title>bbcp - 15.02.03.00.1</title>
+    <style>
+      body {
+        background: #121212;
+        color: #e6e6e6;
+      }
+
+      a {
+        color: #8ab4f8;
+      }
+
+      a:visited {
+        color: #7fb0ff;
+      }
+
+      table td {
+        border-color: #555 !important;
+      }
+
+      pre {
+        background: #1b1b1b;
+        border: 1px solid #444;
+        border-radius: 6px;
+        padding: 12px;
+        overflow-x: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <article>
+    <p>
+      <strong>BBCP</strong>
+    </p>
+    <p>
+      <strong>15.02.03.00.1</strong>
+    </p>
+    <nav aria-label="Table of contents">
+      <ol>
+        <li>
+          <a href="#_Toc392015139">1 BBCP Syntax</a>
+          <ol>
+            <li><a href="#_Toc392015140">1.1 Checksum Considerations (-e and -E)</a></li>
+            <li>
+              <a href="#_Toc392015141">1.2 Tuning Considerations</a>
+              <ol>
+                <li><a href="#_Toc392015142">1.2.1 Window Size (-w)</a></li>
+                <li><a href="#_Toc392015143">1.2.2 Streams (-s)</a></li>
+                <li><a href="#_Toc392015144">1.2.3 I/O Buffer Size (-B)</a></li>
+                <li><a href="#_Toc392015145">1.2.4 Output Ordering (-o and -b +)</a></li>
+                <li><a href="#_Toc392015146">1.2.5 Input Blocking (-b)</a></li>
+                <li><a href="#_Toc392015147">1.2.6 Compression (-c)</a></li>
+                <li><a href="#_Toc392015148">1.2.7 Un-buffered I/O (-u)</a></li>
+                <li><a href="#_Toc392015149">1.2.8 Routing (-z)</a></li>
+              </ol>
+            </li>
+            <li><a href="#_Toc392015150">1.3 Resuming Failed Copies (-a and -k or -K)</a></li>
+            <li><a href="#_Toc392015151">1.4 Multi-Directory Copying (-d)</a></li>
+            <li>
+              <a href="#_Toc392015152">1.5 Using Pipes (-N)</a>
+              <ol>
+                <li><a href="#_Toc392015153">1.5.1 Named Pipe Considerations</a></li>
+                <li><a href="#_Toc392015154">1.5.2 Program Pipe Considerations</a></li>
+                <li><a href="#_Toc392015155">1.5.3 Using Program Pipes to Recursively Copy Small Files</a></li>
+                <li><a href="#_Toc392015156">1.5.4 Restricting Program Pipes</a></li>
+              </ol>
+            </li>
+            <li>
+              <a href="#_Toc392015157">1.6 Real-Time Copying (-R)</a>
+              <ol>
+                <li><a href="#_Toc392015158">1.6.1 Real-Time Copy Protocol</a></li>
+                <li><a href="#_Toc392015159">1.6.2 Using an Alternate Lock File</a></li>
+              </ol>
+            </li>
+            <li><a href="#_Toc392015160">1.7 Modifying ssh Startup (-S and -T)</a></li>
+            <li><a href="#_Toc392015161">1.8 Dealing With Firewalls (-z and -Z)</a></li>
+            <li><a href="#_Toc392015162">1.9 Configuring New Defaults (-C)</a></li>
+            <li><a href="#_Toc392015163">1.10 Recursive Copy Compatibility With cp &amp; scp</a></li>
+            <li><a href="#_Toc392015164">1.11 New Features</a></li>
+            <li><a href="#_Toc392015165">1.12 Backward Compatibility</a></li>
+            <li><a href="#_Toc392015166">1.13 Problem Reports &amp; Enhancement Requests</a></li>
+            <li><a href="#_Toc392015167">1.14 Downloading</a></li>
+            <li><a href="#_Toc392015168">1.15 Legal Notice</a></li>
+          </ol>
+        </li>
+      </ol>
+    </nav>
+    <p>
+      <a href="https://web.archive.org/web/20240704005220/http://www.slac.stanford.edu/~abh/bbcp/bbcp.pdf">Download</a> the pdf version of this document.
+    </p>
+    <p>
+      Updated 2/10/2015
+    </p>
+    <h1>
+      1 BBCP Syntax
+    </h1>
+    <pre>
+bbcp [options] [srcspec [...]] snkspec
+
+srcspec: [[sid@]shost:]source [srcspec]
+snkspec: [tid@]thost:target
+
+options:
+{--compress|-c}[lvl] {--config|-C}fname
+{--force|-f} {--infiles|-I}fname
+{--help|-h} {--keep|-k}
+{--license|-$} {--logfile|-l}logfn
+{--mkdir|-A} {--mode|-m}mode
+{--omit|-O} {--preserve|-p}
+{--progress|-P}sec {--ptime|-~}
+[--readable|-+] {--recursive|-r}
+{--symlinks|-@}slarg {--verbose|-v}
+{--version|-#} {--windowsz|-w}[=]wsz
+[advanced] --
+
+------------------------------------------------------
+mode: dmode/ | fmode | dmode/fmode
+slarg: follow | keep | ignore
+shost: hostname | [ipv6addr] | ipv4addr
+thost: hostname | [ipv6addr] | ipv4addr
+
+advanced:
+{--append|-a}[dir] {--buffers|-b}[+]blkf
+{--buffsz|-B}bfsz {--debug|-D}
+{--dirbase|-d}path {-e|{-E|--checksum}}csarg
+{-F|--nofschk} {--gross|-g}
+{--idfile|-i}fname {--ipv4|-4}[who]
+-K -L lopts[@lurl]
+{--nodns|-n} {--order|-o}
+{--pipe|-N}nio {--port|-Z}p1[:p2]
+{--qos|-q}qos {--realtime|-R}[rtargs]
+{--streams|-s}strms {--sync|-y}d[d]
+-S srccmd -T trgcmd
+{--timelimit|-t}tlim {--unbuffered|-u}loc
+-U wsz {--vverbose|-V}
+{--xfrrate|-x}rate {-z|--reverse}
+
+------------------------------------------------------
+csarg: [%]{a32|c32|md5}[=[csval|csfile]]
+lopts: a|b|c|I|o|r|w|x|[lopts]
+lurl: file://path/filename | x-netlog://host:port | x-syslog://localhost
+loc: s|t [loc]
+nio: i|o [nio]
+who: c|s|t [who]
+    </pre>
+    <p>
+      <strong>Function</strong>
+    </p>
+    <p>
+      Securely and quickly copy data from source to target. Please refer to <a href="https://web.archive.org/web/20240704005220/http://www.slac.stanford.edu/~abh/bbcp/bbcp_bugs.html">known problems</a> for a list of current defects and limitations.
+    </p>
+    <h4>
+      Parameters
+    </h4>
+    <p>
+      <em>sid</em><em> </em>specifies the ssh loginid for the source host. The default is to use your current loginid.
+    </p>
+    <p>
+      <em>shost</em><em> </em>specifies the name of the host that holds the source file. By default, the local host is assumed. The <em>shost</em> may be expressed as:
+    </p>
+    <p>
+      <em> hostname </em>a <strong>DNS</strong> registered hostname
+    </p>
+    <p>
+      <em> </em><strong>[</strong><em>ipv6addrs</em><strong>] </strong>a complete <a href="https://web.archive.org/web/20240704005220/http://www.ietf.org/rfc/rfc2732.txt">RFC2732</a> <strong>IPv6</strong> address enclosed in brackets
+    </p>
+    <p>
+      <em> Ipv4addr </em>an ipv4 address in familiar dot notation
+    </p>
+    <p>
+      <em>source</em><em> </em>specifies the name of the file to be copied. Any number of source files from any number of hosts may be specified on the command line. If the <strong>-I</strong> option is specified, no source files need to be specified on the command line. When <strong>-N</strong> is specified, <em>source</em> must be a named pipe or a program.
+    </p>
+    <p>
+      <em>tid</em><em> </em>specifies the ssh loginid for the target host. The default is to use your current loginid.
+    </p>
+    <p>
+      <em>thost</em><em> </em>specifies the name of the host to which the file is to be copied. By default, the local host is assumed. The <em>thost</em> may be expressed as:
+    </p>
+    <p>
+      <em> hostname </em>a DNS registered hostname
+    </p>
+    <p>
+      <em> </em><strong>[</strong><em>ipv6addrs</em><strong>] </strong>a complete <a href="https://web.archive.org/web/20240704005220/http://www.ietf.org/rfc/rfc2732.txt">RFC2732</a> ipv6 address enclosed in brackets
+    </p>
+    <p>
+      <em> Ipv4addr </em>an ipv4 address in familiar dot notation
+    </p>
+    <p>
+      <em>target</em><em> </em>specifies the name the target location of the file to be copied. If a single source file is specified, <em>target</em> may be a filename or a directory. If more than one source file is specified, <em>target</em> must be the name of a directory. When <strong>-N</strong> is specified, <em>target</em> must be a named pipe or a program.
+    </p>
+    <p>
+    </p>
+    <p>
+      <strong>Options</strong>
+    </p>
+    <p>
+      <strong>--c</strong>ompress[<em>lvl</em>] | <strong>-c </strong>[<em>lvl</em>]
+    </p>
+    <p>
+      compresses the data prior to sending it across the network using <strong>zlib</strong> written by Jean-loup Gailly and Mark Adler. Specify an integer value from 1 through 9 for <em>lvl</em>. A value of 1 gives the best speed while a value of 9 gives the best compression. The default value is 1. If <em>lvl</em> is omitted, <strong>-c</strong> may not be the last option on the command line. See the section on "<a href="#_Compression_(-c)">Compression</a>" for a discussion of this option.
+    </p>
+    <p>
+      <strong>--config </strong><em>fname</em>|<strong> -C </strong><em>fname</em>
+    </p>
+    <p>
+      specifies the name of the configuration file. The configuration file is processed when it is encountered on the command line. See the section "<a href="https://web.archive.org/web/20240704005220/https://www.slac.stanford.edu/~abh/bbcp/#_Configuring_New_Defaults">Configuring New Defaults</a>" for information about configuration files.
+    </p>
+    <p>
+      <strong>--f</strong>orce|<strong> -f </strong>
+    </p>
+    <p>
+      forces the copy by erasing the target prior to copying the source file. By default, if the target already exists for the source file, the copy fails. See also the <strong>-K</strong> option modifier.
+    </p>
+    <p>
+      <strong>--infiles </strong><em>fname</em> | <strong>-I </strong><em>fname</em>
+    </p>
+    <p>
+      includes a list of source file specifications from the file identified by <em>fname</em>. Each new-line terminated record in <em>fname</em> must contain a single source file specification. If <strong>-I</strong> is specified, you need not specify any source files on the command line.
+    </p>
+    <p>
+      <strong>--h</strong>elp|<strong> -h </strong>
+    </p>
+    <p>
+      prints usage and version information and immediately exits..
+    </p>
+    <p>
+      <strong>--k</strong>eep|<strong> -k </strong>
+    </p>
+    <p>
+      keeps any partially created target files and allows full recovery after a copy failure. Refer to "<a href="https://web.archive.org/web/20240704005220/https://www.slac.stanford.edu/~abh/bbcp/#_Resuming_Failed_Copies">Resuming Failed Copies</a>" for details. The <strong>-o</strong> becomes the default. Normally, partial files are removed after a copy fails.
+    </p>
+    <p>
+      <strong>--license </strong>|<strong> -$ </strong>
+    </p>
+    <p>
+      prints the license agreement and immediately exits.
+    </p>
+    <p>
+      <strong>--l</strong>ogfile|<strong> -l </strong><em>logfn</em>
+    </p>
+    <p>
+      logs standard error to the indicated file, <em>logfn</em>, By default, standard error output is written to the terminal.
+    </p>
+    <p>
+      <strong>--mkd</strong>ir<strong> | -A</strong>
+    </p>
+    <p>
+      creates the destination directory, as specified by target specification, if it does not exist.
+    </p>
+    <p>
+      <strong>--m</strong>ode<em>mode</em><strong> | -m </strong><em>mode</em>
+    </p>
+    <p>
+      sets the final mode for the target file. Specify a 3- or 4-digit mode in octal for <em>dmode</em> or <em>fmode</em> (see the syntax diagram). The <em>dmode</em> specified the access mode to be assigned to directories and the <em>fmode</em> to the file itself. The default <em>dmode</em> is 0755 while <em>fmode</em> is 0644.
+    </p>
+    <p>
+      <strong>--omit </strong>|<strong> -O</strong>
+    </p>
+    <p>
+      omits copying files from the source if an identically named file exists at the target. This is particularly useful with <strong>-r</strong> (recursive copy).
+    </p>
+    <p>
+      <strong>--p</strong>reserve|<strong> -p</strong>
+    </p>
+    <p>
+      preserves the source file's mode, group name, access time, and modification time. That is, the target file's mode, group, access and modification times are set to match that of the corresponding source file.
+    </p>
+    <p>
+      <strong>--prog</strong>ress<em>sec </em>|<em> </em><strong>-P </strong><em>sec </em>
+    </p>
+    <p>
+      produces progress messages every <em>sec</em> seconds. Specify a <em>sec</em> value no less than 1 second.
+    </p>
+    <p>
+      <strong>--pt</strong>ime|<strong> -~</strong>
+    </p>
+    <p>
+      only preserves the source file's access time, and modification time. That is, the target file's access and modification times are set to match that of the corresponding source file but the target file's mode and group are unchanged (i.e. determined by the destination defaults).
+    </p>
+    <p>
+      <strong>--read</strong>able|<strong> -+ </strong>
+    </p>
+    <p>
+      with the <strong>--r</strong>ecursive option, skips unreadable files and unsearchable directories. If the <strong>--g</strong>ross option is also specified; unsearchable directories are created at the destination but are otherwise empty. Unreadable symbolic link targets are only recreated when <strong>--symlinks</strong> <strong>keep</strong> is specified. This option is only meaningful for recursive copies.
+    </p>
+    <p>
+      <strong>--r</strong>ecursive|<strong> -r </strong>
+    </p>
+    <p>
+      performs a recursive copy by copying all files starting at the source directory unless the directory ends with slash, in which case the contents and all descendants are copied. Empty directories and symbolic links are ignored. The <strong>-r</strong> option is mutually exclusive with the <strong>-E</strong> option that specifies a known checksum value.
+    </p>
+    <p>
+      <strong>--symlinks</strong> <em>slarg</em>|<strong> -@ </strong><em>slarg</em><strong> </strong>
+    </p>
+    <p>
+      specifies how symbolic links are to be handled during a recursive copy <strong>(--link</strong>s is a synonym). Valid values for <em>slarg</em> are:
+    </p>
+    <p>
+      <strong>follow</strong> - follow each symbolic link and copy its target.
+    </p>
+    <p>
+      <strong>keep</strong> - recreate the symbolic link at the destination.
+    </p>
+    <p>
+      <strong>ignore</strong> - ignore all symbolic links (the default).
+    </p>
+    <p>
+      <strong>--v</strong>erbose<strong> | -v </strong>
+    </p>
+    <p>
+      produces additional output during execution.
+    </p>
+    <p>
+      <strong>--version </strong>|<strong> -#</strong>
+    </p>
+    <p>
+      prints the version number and immediately exits.
+    </p>
+    <p>
+      <strong>--w</strong>indowsz<em>wsz</em> | <strong>-w </strong><em>wsz</em>
+    </p>
+    <p>
+      sets the preferred size of the TCP window. Specify for <em>wsz</em> a value no less that 8192 (i.e., 8k). Numbers suffixed by k, m, or g are multiplied by 210, 220, or 230, respectively. Prefixing wsz with an equals sign disables any auto-tuning and attempts to use the specified window size. See the section "<a href="#_Window_Size_(-w)">Window Size</a>" to choose an appropriate non-default value. The default is to use auto-tuning when available, otherwise a fixed size of 128K.
+    </p>
+    <p>
+      <strong>-- </strong>is a null option. Use <strong>-</strong> when an option with an optional argument would be the last option on the command line.
+    </p>
+    <p>
+      <strong>Advanced Options</strong>
+    </p>
+    <p>
+      <strong>--a</strong>ppend[ <em>dir</em> ] <strong>|</strong> <strong>-a </strong>[ <em>dir</em> ]<strong> </strong>
+    </p>
+    <p>
+      appends data to the end of the target file if the target is found to be incomplete due to a previously failed copy. The optional <em>dir</em> specifies the directory on the target host where checkpoint information is to be written (the default is <em>home</em>/.bbcp). The <strong>-a</strong> option is mutually exclusive with the <strong>-E</strong> option. See the section "<a href="#_Resuming_Failed_Copies">Resuming Failed Copies</a>" for more details. If <em>dir</em> is omitted and <strong>-a is</strong> the last option on the command line it must be followed by the <strong>--</strong> option (double dash).
+    </p>
+    <p>
+      <strong>--b</strong>uffers <em>blkf</em> | <strong>-b</strong> <em>blkf</em>
+    </p>
+    <p>
+      specifies the read blocking buffer factor. That is, <em>blkf</em> data blocks are always read from disk and then queued for sending across the network. The maximum is determined by the maximum number of scatter/gather buffers allowed in a readv() system call. See the section "<a href="#_Input_Blocking_(-b)">Input Blocking</a>" for cases where it might help. The default is 1 and set to 1 if <strong>-u t</strong> is specified.
+    </p>
+    <p>
+      <strong>--b</strong>uffers <strong>+</strong><em>blkf </em>|<em> </em><strong>-b</strong> <strong>+</strong><em>blkf</em>
+    </p>
+    <p>
+      adds <em>blkf</em> additional output buffers. This option is meant to be used when ordered output is in effect (see <strong>-o</strong>). See the section "<a href="https://web.archive.org/web/20240704005220/https://www.slac.stanford.edu/~abh/bbcp/#_Output_Ordering_(-o">Output Ordering</a>" for cases where it might help. The default is 0.
+    </p>
+    <p>
+      <strong>--buffsz</strong> <em>bfsz</em><em> </em>|<em> </em><strong>-B</strong> <em>bfsz</em>
+    </p>
+    <p>
+      specifies the disk I/O buffer size and becomes the effective I/O transfer unit. Specify for <em>bfsz</em> a value no less that 1024 (i.e., 1k). Numbers suffixed by k, m, or g are multiplied by 210, 220, or 230, respectively. The <em>bfsz</em> is always made a multiple of the page size, the minimum value possible. The default is <em>wsz</em>*1.25<em> </em>or 512K, whichever is smaller. See the section "<a href="#_I/O_Buffer_Size">I/O Buffer Size</a>" for cases where changing the default may help.
+    </p>
+    <p>
+      <strong>--debug </strong>|<strong> -D</strong>
+    </p>
+    <p>
+      turns on debugging.
+    </p>
+    <p>
+      <strong>--dirbase</strong> <em>path</em> | <strong>-d</strong> <em>path</em>
+    </p>
+    <p>
+      specifies source relative addressing. Each relative <em>srcspec</em> is prefixed by path. When the file is copied to the target, then the destination path will be <em>snkspec</em>/<em>srcspec</em>. That is, the relative path in <em>srcspec</em> will be created on the target host relative to <em>snkspec</em> and then the file will be copied. See the section "<a href="#_Multi-Target_Copying_(-d)">Multi-Target Copying</a>" for more information.
+    </p>
+    <p>
+      <strong>-e </strong>calculates a checksum for each block of data sent using the algorithm specified by the <strong>-E</strong> option and is equivalent to "<strong>-E md5</strong>" (see below).
+    </p>
+    <p>
+      <strong>-E </strong>[<strong>%</strong>]<em>cstype</em>[<strong>=</strong>[<em>csval</em>|<em>csfile</em>]]<strong> | --check</strong>sum[<strong>%</strong>]<em>cstype</em>[<strong>=</strong>[<em>csval</em>|<em>csfile</em>]]
+    </p>
+    <p>
+      <strong> </strong>calculates a checksum either for the whole file and on a block level if -e is specified. It also optionally checks the checksum against a known value (see <em>csval</em>) or be reports it (see <em>csfile</em> and the <strong>-v</strong> option). <strong>-E</strong> usually implies <strong>-o</strong> and disallows <strong>-a</strong> as well as<strong> -r </strong>if a value is specified. See the section "<a href="#_Checksum_Considerations_(-e">Checksum Considerations</a>" for details. The arguments are:
+    </p>
+    <p>
+      <strong>%</strong> computes the checksum on the source node. By default, the checksum is computed on the target node.
+    </p>
+    <p>
+      <em>cstype</em> specifies the checksum algorithm to be used. Supported types are:
+    </p>
+    <p>
+      <strong>a32</strong> Adler 32-bit checksum.
+    </p>
+    <p>
+      <strong>c32</strong> Cyclic Redundancy Check (CRC) 32 bit checksum.
+    </p>
+    <p>
+      <strong>md5</strong> Message Digest 128-bit checksum.
+    </p>
+    <p>
+      <em>csval</em> is the known checksum value specified as a hexadecimal ASCII string with the correct number of digits relative to <em>cstype</em>. When <em>csval</em> is specified, the calculated checksum is compared to this value and the copy fails if they do not agree. If csval is not specified, the computed checksum is written either to standard error or <em>csfile</em>.
+    </p>
+    <p>
+      <em>csfile</em> is the name of the file where the checksum information is to be appended. The filename must not start with a hexadecimal digit. If <em>csfile</em> is not specified, the value is written to standard error. The output format is:
+    </p>
+    <p>
+      Checksum: <em>cstype csval host</em><strong>:</strong><em>destfile</em>
+    </p>
+    <p>
+      <em>cstype </em>checksum type (i.e., <strong>a32</strong>, <strong>c32</strong>, or <strong>md5</strong>).
+    </p>
+    <p>
+      <em>csval </em>computed<em> </em>checksum value.
+    </p>
+    <p>
+      <em>host </em>target host name.
+    </p>
+    <p>
+      <em>destfile </em>name of the file created at <em>host</em>.
+    </p>
+    <p>
+      <strong>-F </strong>|<strong> --nofs</strong>chk<strong> </strong>
+    </p>
+    <p>
+      forces the copy by not checking if there is enough free space on the target host. This option is especially useful for esoteric devices that do not report the correct amount of free space.
+    </p>
+    <p>
+      <strong>--gross</strong> | <strong>-g </strong>
+    </p>
+    <p>
+      recreates the source directory structure even if it is empty (i.e. no files or symbolic links). This is only meaningful for recursive copies.
+    </p>
+    <p>
+      <strong>--i</strong>dfile <em>fname</em> |<strong> -i</strong> <em>fname</em>
+    </p>
+    <p>
+      specifies the name of the <strong>ssh</strong> identity file if one has been specifically created for <strong>bbcp</strong>. The identity filename, prefixed by <strong>-i</strong>, is included in the <strong>ssh</strong> command line when starting the source and target nodes.
+    </p>
+    <p>
+      <strong>--ipv4 </strong>[<em>who</em>]|<strong> -4 </strong>[<em>who</em>]
+    </p>
+    <p>
+      uses the <strong>IPv4</strong> <strong>TCP</strong> stack for <em>command</em> processing and <em>source</em>-<em>target</em> connections. This option is incompatible with <strong>IPv6</strong> addresses. The optional <em>who</em> argument restricts <strong>IPv4</strong> mode to the <em>command</em> if <strong>c </strong>is specified, the <em>source</em> if <strong>s</strong> is specified or the <em>target</em> if <strong>t</strong> is specified. The default is <strong>cst </strong>(i.e. everywhere). If <em>who</em> is omitted and <strong>--ipv4 </strong>is the last option on the command line it must be followed by the <strong>--</strong> option (double dash).
+    </p>
+    <p>
+      <strong>-K </strong>similar to <strong>-k</strong> but removes the ordering restriction unless another option requires it.With <strong>-f</strong> the target file is truncated, not removed, prior to copying. This option is only useful when the destination is a symbolic link to a pre-created file place-holder. The <strong>-K</strong> option is mutually exclusive with<strong> -k</strong>.
+    </p>
+    <p>
+      <strong>-L </strong><em>lopts</em>[<strong>@</strong><em>lurl</em>]
+    </p>
+    <p>
+      enables detailed logging of actions via the <a href="https://web.archive.org/web/20240704005220/http://netlogger.lbl.gov/home">NetLogger</a> interface. The <em>lopts</em> specify what is to be logged while <em>lurl</em> determines how it is logged. For <em>lopts</em> specify one or more of the following:
+    </p>
+    <p>
+      <strong>a</strong> - append to data file <strong>o</strong> - log network writes
+    </p>
+    <p>
+      <strong>b</strong> - buffer information in memory <strong>r</strong> - log disk reads
+    </p>
+    <p>
+      <strong>c</strong> - log data compression <strong>w</strong> - log disk writes
+    </p>
+    <p>
+      <strong>i</strong> - log network reads <strong>x</strong> - log data expansion
+    </p>
+    <p>
+      If <em>lurl</em> is not specified, the logging interface uses the value of environmental variable "NETLOGGER_DEST". Specify one of three destinations protocols:
+    </p>
+    <p>
+      <strong>file</strong> - data is written to the file identified by <em>path</em>/<em>filename</em>
+    </p>
+    <p>
+      <strong>x-netlog</strong> - data is sent to <em>host</em> listening on <em>port</em>
+    </p>
+    <p>
+      <strong>x-syslog</strong> - data is sent to the system log on the local host
+    </p>
+    <p>
+      <strong>--nodns </strong>|<strong> -n </strong>
+    </p>
+    <p>
+      does not use <strong>DNS</strong> to resolve IP addresses to host names. This option is especially useful when the source or target machine is neither registered in <strong>DNS</strong> nor has a valid entry in the /etc/hosts file.
+    </p>
+    <p>
+      <strong>--o</strong>rder|<strong> -o</strong>
+    </p>
+    <p>
+      serializes the output stream to force ordered (i.e., sequential) output. The default is to write blocks in the order that they arrive from the network, which is usually somewhat random order. See the section "<a href="#_Output_Ordering_(-o">Output Ordering</a>" for more information. The <strong>-o</strong> becomes the default when <strong>-a</strong>, <strong>-k</strong>, <strong>-E +st</strong>, <strong>-E +t</strong>, <strong>-N</strong> <strong>o</strong>, or <strong>-u t</strong> is specified.
+    </p>
+    <p>
+      <strong>--pipe</strong> <em>nio</em><em> </em>| <strong>-N</strong> <em>nio</em><em> </em>
+    </p>
+    <p>
+      allows copying using pipes. When <em>nio</em> contains an '<strong>i</strong>', the data <em>source</em> must be a named pipe or a program. When <em>nio</em> contains an '<strong>o</strong>', the data <em>target</em> must be a named pipe or a program. Both <em>source</em> and <em>target</em> may be named pipes or programs. The <strong>-N</strong> option is mutually exclusive <strong>-a</strong>, <strong>-d</strong>, <strong>-K</strong>, <strong>-r</strong>, <strong>-R</strong>, <strong>-u, </strong>and<strong> -@</strong>. Also, '<strong>-N</strong> <strong>o</strong>' is mutually exclusive with <strong>-f</strong>, <strong>-m</strong>, and <strong>-p</strong>; and <strong>-o</strong> becomes the default. Only a single <em>source</em> may be specified with ' <strong>-N</strong> <strong>i</strong>'. See the section "<a href="#_Using_Pipes_(-N)">Using Pipes</a>" for more information and restrictions .
+    </p>
+    <p>
+      <strong>--port</strong> <em>p1</em>[<strong>:</strong><em>p2</em>] | <strong>-Z</strong> <em>p1</em>[<strong>:</strong><em>p2</em>]
+    </p>
+    <p>
+      specifies the port or port range to be used in accepting data connections. Normally, the first available port is used. This option restricts the choice to the specified value or range. Specify a value between 1 and 65535, inclusive for <em>p1</em> and, optionally, <em>p2</em>. If <em>p2</em> is specified, it must be greater than or equal to <em>p1</em>. See the section "<a href="https://web.archive.org/web/20240704005220/https://www.slac.stanford.edu/~abh/bbcp/#_Dealing_With_Firewalls">Dealing with Firewalls</a>" for more information.
+    </p>
+    <p>
+      <strong>--qos </strong><em>qos</em>|<strong> -q</strong> <em>qos</em><em> </em>
+    </p>
+    <p>
+      specifies the quality of service to be used. This is router-implementation dependent and may ignored. Specify a value between 0 and 255, inclusive.
+    </p>
+    <p>
+      <strong>--realtime </strong>[<em>rtargs</em>]<em> </em>|<em> </em><strong>-R </strong>[<em>rtargs</em>]
+    </p>
+    <p>
+      enables real-time copy mode. See the section "<a href="#_Real-Time_Copying_(-R)_1">Real-Time Copying</a>" for a full description of this mode and <em>rtargs</em>. If <em>rtargs</em> is omitted and the option is the last option on the command line it must be followed by the <strong>--</strong> option (double dash).
+    </p>
+    <p>
+      <strong>--s</strong>treams<em>strms</em><em> </em>|<em> </em><strong>-s </strong><em>strms</em>
+    </p>
+    <p>
+      sets the number of parallel network streams to be used for the transfer. The default is 4. See the section "<a href="#_Streams_(-s)">Streams</a>" for other possible values.
+    </p>
+    <p>
+      <strong>--sync d</strong>[<strong>d</strong>]<em> </em>|<em> </em><strong>-y d</strong>[<strong>d</strong>]
+    </p>
+    <p>
+      synchronizes memory-based file pages with disk pages before closing the output file. A single <strong>d</strong> synchronizes data pages, while <strong>dd</strong> synchronizes data pages as well as inode pages (i.e. meta-data). Review the notes on various admonitions about using this.
+    </p>
+    <p>
+      <strong>-S </strong><em>srccmd</em>
+    </p>
+    <p>
+      is the command to be used to start <strong>bbcp</strong> on the source host. The default is "ssh -x -a -oFallBackToRsh=no %4 %I -l %U %H bbcp". See the usage notes for more information.
+    </p>
+    <p>
+      <strong>-T </strong><em>srccmd</em>
+    </p>
+    <p>
+      is the command to be used to start <strong>bbcp</strong> on the target host. The default is "ssh -x -a -oFallBackToRsh=no %4 %I -l %U %H bbcp". See the usage notes for more information.
+    </p>
+    <p>
+      <strong>--t</strong>imelimit<em>tlim </em>|<em> </em><strong>-t </strong><em>tlim</em>
+    </p>
+    <p>
+      is the maximum amount of time that the copy may take before it is aborted. The time limit applies to each source host regardless of the number of files that host supplies. Specify a number greater than zero and optionally suffixed by <strong>s</strong> (the default), <strong>m</strong>, or <strong>h</strong> for seconds, minutes, and hours, respectively. By default, no time limit applies.
+    </p>
+    <p>
+      <strong>--u</strong>nbuffered<em>loc </em>|<em> </em><strong>-u </strong><em>loc</em><strong> </strong>
+    </p>
+    <p>
+      requests un-buffered (i.e., direct) I/O at the locations specified by <em>loc</em>. This option may actually reduce performance. See the section "<a href="#_Un-buffered_I/O_(-u)">Un-buffered I/O</a>" for more information. The <strong>-u</strong> option forces <strong>-b 1</strong> and the I/O buffer size is set to a multiple of 8K. The <strong>-u t</strong> option forces <strong>-o</strong>. Specify one or more of the following letters for <em>loc</em>:
+    </p>
+    <p>
+      <strong>s - </strong>source-side<strong> t - </strong>target-side
+    </p>
+    <p>
+      <strong>-U </strong><em>wsz</em>
+    </p>
+    <p>
+      sets the size of all I/O buffers, including the TCP/IP socket buffer. This option is identical to the <strong>-w</strong> option except that host limits are not checked and buffers are set to the specified size whether or not the operating system considers them valid. Improper use of this option may cause the copy to fail. This option is only useful when dealing with experimental TCP/IP stacks. Most users should use the <strong>-w</strong> option.
+    </p>
+    <p>
+      <strong>--vv</strong>erbose|<strong> -V </strong>
+    </p>
+    <p>
+      produces even more output than <strong>-v</strong> allows, including detailed transfer speed statistics.
+    </p>
+    <p>
+      <strong>--x</strong>frrate<em>rate </em>|<em> </em><strong>-x </strong><em>rate</em>
+    </p>
+    <p>
+      sets the maximum transfer rate. Specify for <em>rate</em> a value no less that 1024 (i.e., 1k). Numbers suffixed by k, m, or g are multiplied by 210, 220, or 230, respectively. Data is clocked out from the source at the specified rate per second.
+    </p>
+    <p>
+      <strong>-z | --rev</strong>erse
+    </p>
+    <p>
+      uses reverse connection protocol. See the section "<a href="https://web.archive.org/web/20240704005220/https://www.slac.stanford.edu/~abh/bbcp/#_Dealing_With_Firewalls">Dealing with Firewalls</a>" for more information.
+    </p>
+    <p>
+      <strong>Success</strong>
+    </p>
+    <p>
+      The program exists with a status code of 0.
+    </p>
+    <p>
+      <strong>Failure</strong>
+    </p>
+    <p>
+      The program exits with a non-zero status code.
+    </p>
+    <p>
+      <strong>Notes</strong>
+    </p>
+    <p>
+      1) A list of known problems is detailed on the following web page: <a href="https://web.archive.org/web/20240704005220/http://www.slac.stanford.edu/~abh/bbcp/bbcp_bugs.html">http://www.slac.stanford.edu/~abh/bbcp/bbcp_bugs.html</a>
+    </p>
+    <p>
+      2) Files are copied in the order specified. To minimize start-up and shutdown time, adjacent files are grouped by source host and treated as a copy set (i.e., a related group of files). Avoid inter-mixing different source locations. That is, always specify all the required files from one source location before specifying files from another location.
+    </p>
+    <p>
+      3) The destination file system must have sufficient space to comfortably hold all of the source files. If sufficient space does not exist at the start of a copy set, the copy is terminated. Use the <strong>-F</strong> option to avoid this requirement.
+    </p>
+    <p>
+      4) While the copy is in progress, the target file has 0200 as its mode (i.e., owner write-only). The mode is changed only after the copy succeeds.
+    </p>
+    <p>
+      5) The <strong>sync</strong> option makes sure that all pages have been written to disk before the copy is considered complete. A single <strong>d</strong> argument only makes sure that data pages are synchronized and is supported by all POSIX compliant file systems. A double <strong>d</strong> (i.e. <strong>dd</strong>) argument synchronizes data as well as directory pages (i.e. inodes) and is not uniformly supported by all file systems. If '<strong>sync dd</strong>' is specified and the underlying file system does not support inode synchronization, an error may result. You should check for support before you use this option in production wrokflows.
+    </p>
+    <p>
+      6) Using the <strong>sync</strong> option may significantly impact the overall speed of the copy as <strong>bbcp</strong> has to wait until all data is actually written to disk.
+    </p>
+    <p>
+      7) By default,<strong> bbcp</strong> uses <strong>ssh</strong> for authentication on every host that was specified in the source and target specifications. The rules attending to normal <strong>ssh</strong> use always apply to <strong>bbcp</strong>. When in doubt, simply <strong>ssh</strong> to the host in question to validate your ability to copy files to or from that host.
+    </p>
+    <p>
+      8) Because <strong>bbcp</strong> invokes <strong>ssh</strong> and itself without an absolute path, you must make sure that <strong>bbcp</strong> and <strong>ssh</strong> can be found in one of the directories listed in your PATH environmental variable. Otherwise, you must specify where <strong>bbcp</strong> and <strong>ssh</strong> can be found (see the next note).
+    </p>
+    <p>
+      9) The <strong>-S</strong> and <strong>-T</strong> options allows you to specify different commands to start <strong>bbcp</strong> on the source and sink nodes. Refer to the section "<a href="#_Modifying_ssh_Startup">Modifying ssh Startup</a>" for details on how to change the default location of <strong>bbcp</strong> and <strong>ssh</strong>.
+    </p>
+    <p>
+      10) <strong>bbcp</strong> allows the source to be /dev/zero and the destination to be /dev/null. This is very useful in measuring actual network bandwidth.
+    </p>
+    <p>
+      11) Refer to <a href="https://web.archive.org/web/20240704005220/http://netlogger.lbl.gov/home">http://netlogger.lbl.gov/home</a> for complete information on NetLogger.
+    </p>
+    <p>
+      12) You can easily GRID enable <strong>bbcp</strong> from the security standpoint by specifying <a href="https://web.archive.org/web/20240704005220/http://www.ncsa.uiuc.edu/Divisions/ACES/GSI/openssh/">GSI-OpenSSH</a> as the authentication and launch vehicle using the <strong>-S</strong> and <strong>-T</strong> options.
+    </p>
+    <p>
+      13) The <strong>-ipv4</strong> option is meant to be used in cases where either the <em>source</em> or <em>target</em> node has either been improperly configured for <strong>IPv6</strong> or has a non-working <strong>IPv6</strong> implementation. By default, both parties are forced to operate in <strong>IPv4</strong> mode. Consequently, parties must have an <strong>IPv4</strong> address. In mixed mode environments use the <em>who</em> argument.
+    </p>
+    <p>
+      14) Specifying <strong>-ipv4</strong> <strong>c</strong> substitutes <strong>-4</strong> for <strong>%4</strong> in the <strong>ssh</strong> command line. If you over-ride the default, you must include <strong>%4</strong> n the command line to have the -<strong>4</strong> option added if it is needed.
+    </p>
+    <h2>
+      1.1 Checksum Considerations (-e and -E)
+    </h2>
+    <p>
+      The <strong>-e</strong> and <strong>-E</strong> options allow you to verify the integrity of the copy but they incur CPU costs. Certain option combinations require that two checksums be calculated at the source node, further increasing the CPU cost but allowing for more flexibility. When you specify a known value for the checksum, <strong>bbcp</strong> can verify that no bit errors are introduced since the file was created. The <strong>-e</strong> and <strong>-E</strong> options interact. Below is a table that describes checksum processing based on various options an arguments and indicates whether or not ordered output (<strong>-o</strong>) is enforced.
+    </p>
+    <table cellspacing="0" style="border-collapse:collapse">
+      <tbody>
+        <tr>
+          <td style="border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; border-top:1px solid black; vertical-align:top; width:163px">
+            <p>
+              <strong>Specification</strong>
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:1px solid black; vertical-align:top; width:36px">
+            <p>
+              <strong>-o</strong>
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:1px solid black; vertical-align:top; width:391px">
+            <p>
+              <strong>Checksum Processing</strong>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; border-top:none; vertical-align:top; width:163px">
+            <p>
+              <strong>-E</strong> <strong> </strong><em>cstype</em>
+            </p>
+            <p>
+              <strong>-E</strong> <strong>%</strong><em>cstype</em>
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:36px">
+            <p>
+              N
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:391px">
+            <p>
+              Calculates block level checksums at the source and target to detect block transmission errors.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; border-top:none; vertical-align:top; width:163px">
+            <p>
+              <strong>-e</strong> <strong>-E</strong> <em>cstype</em>
+            </p>
+            <p>
+              <strong>-e</strong> <strong>-E</strong> <strong>%</strong><em>cstype</em>
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:36px">
+            <p>
+              N
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:391px">
+            <p>
+              Equivalent to the above.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; border-top:none; vertical-align:top; width:163px">
+            <p>
+              <strong>-E</strong> <em>cstype</em><strong>=</strong>[<em>csfile</em>]
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:36px">
+            <p>
+              Y
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:391px">
+            <p>
+              Calculates and <em>prints</em> a file checksum at the <em>target</em>.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; border-top:none; vertical-align:top; width:163px">
+            <p>
+              <strong>-E</strong> <strong>%</strong><em>cstype</em><strong>=</strong>[<em>csfile</em>]
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:36px">
+            <p>
+              N
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:391px">
+            <p>
+              Calculates and <em>prints</em> a file checksum at the <em>source</em>.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; border-top:none; vertical-align:top; width:163px">
+            <p>
+              <strong>-e</strong> <strong>-E</strong> <em>cstype</em><strong>=</strong>[<em>csfile</em>]
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:36px">
+            <p>
+              Y
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:391px">
+            <p>
+              Calculates and <em>prints</em> a file checksum at the <em>source</em> and <em>target</em> nodes and verifies that they are the same.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; border-top:none; vertical-align:top; width:163px">
+            <p>
+              <strong>-e</strong> <strong>-E</strong> %<em>cstype</em><strong>=</strong>[<em>csfile</em>]
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:36px">
+            <p>
+              N
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:391px">
+            <p>
+              Calculates and <em>prints</em> a file checksum at the <em>source</em>. Additionally, block level checksums are calculated at the source and target to detect transmission errors.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; border-top:none; vertical-align:top; width:163px">
+            <p>
+              <strong>-E</strong> <em>cstype</em><strong>=</strong><em>csval</em>
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:36px">
+            <p>
+              Y
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:391px">
+            <p>
+              Calculates the file checksum at the <em>target</em> and <em>compares</em> it to <em>csval</em>.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; border-top:none; vertical-align:top; width:163px">
+            <p>
+              <strong>-E</strong> <strong>%</strong><em>cstype</em><strong>=</strong><em>csval</em>
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:36px">
+            <p>
+              N
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:391px">
+            <p>
+              Calculates the file checksum at the <em>source</em> and <em>compares</em> it to <em>csval</em>.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; border-top:none; vertical-align:top; width:163px">
+            <p>
+              <strong>-e</strong> <strong>-E</strong> <em>cstype</em><strong>=</strong><em>csval</em>
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:36px">
+            <p>
+              Y
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:391px">
+            <p>
+              Calculates the file checksum at the <em>source</em> and <em>target</em> nodes, verifies that they are the same, and <em>compares</em> it to <em>csval</em>.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="border-bottom:1px solid black; border-left:1px solid black; border-right:1px solid black; border-top:none; vertical-align:top; width:163px">
+            <p>
+              <strong>-e</strong> <strong>-E</strong> %<em>cstype</em><strong>=</strong><em>csval</em>
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:36px">
+            <p>
+              N
+            </p>
+          </td>
+          <td style="border-bottom:1px solid black; border-left:none; border-right:1px solid black; border-top:none; vertical-align:top; width:391px">
+            <p>
+              Calculates the file checksum at the <em>source</em> and <em>compares</em> it to <em>csval</em>. Additionally, block level checksums are calculated at the source and target to detect transmission errors.
+            </p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      File checksums computed at the target always require ordered output while independent block checksums and source-only checksums do not.
+    </p>
+    <p>
+      Ordered output is difficult to achieve on links with highly variable latency; and may cause copy operations to stall. Even so, it is possible to validate or compute a file checksum without ordering the output by prefixing the <em>cstype</em> by a percent sign (<strong>%</strong>) and specifying <strong>-e</strong>. This combination requests transitive <strong>s</strong>ource checksum mode. Here, the file checksum is computed and optionally validated at the source; then independent checksums are computed for each block and sent to the target where they are validated. A file checksum can be reported because if the source checksum is correct and each block sent to the target suffered no errors, then the same checksum should also exist at the target. Because two checksums must be computed at the source node, the source may become compute-heavy. While not a true end-to-end checksum, it may provide sufficient integrity protection while avoiding output ordering.
+    </p>
+    <p>
+      If you do specify output ordering (<strong>-o</strong>) or if output ordering is forced by some other option, along with source-only checksumming; <strong>bbcp</strong> automatically reverts to source-target checksums to avoid computing two checksums on the source node. Therefore, "<strong>-o</strong> <strong>-e</strong> <strong>-E</strong> %<em>cstype</em><strong>=</strong>" is equivalent to specifying "<strong>-e</strong> <strong>-E</strong> <em>cstype</em><strong>=</strong>".
+    </p>
+    <p>
+      If full end-to-end checksums are not needed, you can save substantial amount of CPU time by not specifying the percent sign and <strong>-e</strong>. This combination requests direct <strong>t</strong>arget checksum mode. Here, the file checksum is only computed at the target node. If a <em>csval</em> is specified, it is only verified at the target. If incorrect, it is impossible to know where the error was introduced. Merely printing a target checksum, of course, is no guarantee that it is correct. Target verification mode still requires ordered output but no additional source CPU resources.
+    </p>
+    <h2>
+      1.2 Tuning Considerations
+    </h2>
+    <p>
+      <strong>bbcp</strong> has many options for tuning a file transfer to achieve maximum possible performance. Which to use and the appropriate values are completely determined by the type of devices and file systems being used at the source and target node as well as the network that joins them. This section describes what the tuning options actually do and how you might use them.
+    </p>
+    <h3>
+      1.2.1 Window Size (-w)
+    </h3>
+    <p>
+      The first and most important option is <strong>-w</strong>. This determines the TCP window size as well as the default I/O size. The default of 128Kis usually good enough for LAN and larger values are likely to hurt performance.
+    </p>
+    <p>
+      For wide area networks, you must compute the bandwidth delay product. This is the product of the network bandwidth and round trip time (<strong>RTT</strong>) between the source and target nodes. The basic formula is:
+    </p>
+    <p>
+      window = <em>netspeed</em>/8*RTT
+    </p>
+    <p>
+      Where <em>netspeed</em> is network bandwidth in bits per second and <strong>RTT</strong> is the round-trip time between the source and target; which can be determined using the <strong>ping</strong> or <strong>traceroute</strong> commands. The result is the optimal window size in bytes.
+    </p>
+    <p>
+      For example, assume you have a 1Gb link and want to send a file from San Francisco (SFO) to Geneva, Switzerland (GVA). The RTT is typically 175ms. Using the formula above, the ideal window would be 20.85MB, much larger than most operating systems allow. So, you will likely choose the largest value allowed that also does not overwhelm the memory resources of the machines being used.
+    </p>
+    <p>
+      Refer to <a href="https://web.archive.org/web/20240704005220/http://www.speedguide.net/bdp.php">http://www.speedguide.net/bdp.php</a> for easily calculating the optimal window size.
+    </p>
+    <p>
+      However, you may not need to calculate a window size at all if the receiving host supports window auto-tuning. This relatively new addition to the TCP/IP stack is fully available in Linux 2.6.17 and above. Auto-tuning is used by default when it is available. While this mode does not require that you manually calculate the window it also assumes that the system administrator has properly configured the auto-tuning parameters and they are appropriate for your particular transfer. That may not be the case and, if the <strong>-v</strong> option has been specified, <strong>bbcp</strong> will issue a warning if it detects settings that would likely compromise performance. Use the <strong>-V</strong> option display the window settings for an actual transfer.
+    </p>
+    <p>
+      When auto-tuning is inappropriate or just wrong, you can disable its use by prefixing the window size with an equals sign (e.g., <strong>-w =128k</strong>). This does not mean the window will equal the specified value; as <strong>bbcp</strong> always negotiates the actual window between the sending and receiving hosts.
+    </p>
+    <p>
+      Refer to <a href="https://web.archive.org/web/20240704005220/http://www.psc.edu/networking/projects/tcptune/">http://www.psc.edu/networking/projects/tcptune/</a> for a good tutorial on tuning TCP stacks for maximum data transfer performance.
+    </p>
+    <h3>
+      1.2.2 Streams (-s)
+    </h3>
+    <p>
+      The <strong>-s</strong> options is the second most important tuning parameter. This specifies the number of parallel TCP streams. A naive explanation would say that streams can make up for not having a large enough window. The idea is that if you can't get enough packets moving in a single window, then create multiple windows and run them simultaneously. This is only partially true. While multiple streams do provide multiple windows, multiple windows also parallelize traffic with independent time-outs, re-transmissions, and greatly improved I/O overlapping. This is a cumulative effect that dramatically increases the overall bandwidth utilization. But, too much of a good thing can also be bad, as you will see below.
+    </p>
+    <p>
+      The optimal number of streams can be calculated as:
+    </p>
+    <p>
+      Streams = <em>window</em>/<em>actual</em>
+    </p>
+    <p>
+      Where <em>window</em> is the calculated optimal window size and <em>actual</em> is the window size that is actually being used. It follows that the smaller the actual window the larger number of streams will be needed. Using the SFO-GVA example with a window size of 512K would imply that about 42 streams would be optimal. In practice, this is not a practical number and would likely reduce bandwidth utilization. The reason is that each additional stream requires more CPU and memory resources and the scaling is not linear. You can see this for yourself by copying a file and successively increasing the number of streams. As the number is increased the percentage improvement will gradually become successively smaller and will eventually become negative.
+    </p>
+    <p>
+      As a rule of thumb, start with the optimal calculation divided by two. Then take measurements 25% above and below that number and use whichever provides the best performance. In the local area network the default of 4 streams is usually sufficiently good for 1Gb LAN transfers; while 8 to 12 streams is good for WAN transfers.
+    </p>
+    <h3>
+      1.2.3 I/O Buffer Size (-B)
+    </h3>
+    <p>
+      The third most important tuning parameter is the I/O buffer size. This is the amount of data that will be read from disk, sent over the network in one request, and then written to the target device. By default, the buffer size is set to be the same as the window size. This is ideal to maximize parallelism but might not always be the best value. The ideal buffer size is mostly determined by the file systems being used and its underlying devices. To add more complications, file systems can be tuned for various performance targets and they are rarely tuned to provide the best network performance. Hence, defaulting for maximum parallelism is a good default.
+    </p>
+    <p>
+      If you know the performance characteristics of source and destination file systems then playing with the buffer size may improve overall network bandwidth utilization. Typically, a larger buffer will make up for device seek-time delays at the expense of reduced parallelism. However, this may still be a win. Generally, faster inter-connects (e.g., 10Gb) fair much better with larger I/O buffers than slower inter-connects; especially in the local area network. In the wide area network try using a buffer size twice the window size to see if any improvement can be realized.
+    </p>
+    <h3>
+      1.2.4 Output Ordering (-o and -b +)
+    </h3>
+    <p>
+      I/O ordering allows you to guarantee that the output stream is sequential in nature. Disk devices work best doing sequential I/O. So, you may wonder why ordering is not the default. The reason is that file systems tend to smooth out unordered output via their memory cache and <strong>bbcp</strong>'s unordered output is largely bounded (i.e., output tends to be more ordered than not). Furthermore, guaranteeing ordered output is memory intensive since an out-of order block must be buffered until its predecessor is received. Depending on how the parallel streams are routed and network latency variability, ordered output may lead to large demands for memory to the point that the copy stalls. The <strong>-b +</strong> option exists solely to inform <strong>bbcp</strong> how much more memory it should use to try to prevent stalls. There is no formula because the value depends on the network being used and its performance at the time it is being used. If ordered output is desired and copies stall, start with a value twice the number of streams being used to see if that solves the problem.
+    </p>
+    <p>
+      You may need to worry about order tuning depending on which other options are chosen. The <strong>-a</strong> (append mode), <strong>-c</strong> (compression), <strong>-k</strong> (keep), <strong>-E</strong> (checksum), and <strong>-u t</strong> (un-buffered target) are sequential in nature and enforce an ordered output stream. Some file systems (e.g., <strong>HDFS</strong>) also require an ordered output stream. So, keep in mind these options and their side-effects.
+    </p>
+    <h3>
+      1.2.5 Input Blocking (-b)
+    </h3>
+    <p>
+      The I/O blocking option can provide some improvement in transfer rate by reading several blocks from the input device before queuing the blocks for transmission. Parallel queuing tends to smooth out variability when the TCP streams differ greatly in latency. The cost is a higher initial latency since no stream can start until the requested blocks are read from disk. Eventually, this latency tends to disappear but only if the input device is much faster than the network link. Additionally, there is somewhat less CPU utilization as there are fewer kernel calls to transfer the data. That said, the default is 1 and normally provides the best overall performance.
+    </p>
+    <p>
+      Consider increasing the blocking factor if the input device is much faster than the network link and window sized transmission units (i.e., -B is not specified) provide the best amount of parallelism.
+    </p>
+    <h3>
+      1.2.6 Compression (-c)
+    </h3>
+    <p>
+      One achieves the highest bandwidth utilization by not using any bandwidth at all and still accomplishing the task. This is what compression tries to provide by reducing the number of bytes sent over the network. Compression is hardly free since it requires a significant amount of CPU resources at the source and target nodes. Indeed, if there is insufficient CPU resources on either end, compression will provide much worse performance. Performance will further degrade if the data does not compress well.
+    </p>
+    <p>
+      You should considered compression if the data to be sent has a compression ratio of 1.5 or better and the achievable network bandwidth utilization is less than 66% of the stated bandwidth. Be aware of the usable CPU power of the source and target nodes will ultimately determine if compression is a viable option.
+    </p>
+    <h3>
+      1.2.7 Un-buffered I/O (-u)
+    </h3>
+    <p>
+      The <strong>-u</strong> option provides a mechanism to bypass the normal file system memory cache. It can be selectively employed at the source and target nodes. Bypassing the file system cache limits the transfer to the raw speed of the underlying device which, in practice, is usually slower than the network. Consequently, this option should be used as the last resort in improving the transfer rate. There are, however, some cases where un-buffered I/O makes sense either on the source or target. For instance, when transferring a large file (i.e., several gigabytes) using the file system cache may overwhelm the operating system and lead to a general slow-down that is far worse than transferring the data directly from the slow device. Un-buffered I/O also makes sense if the source device is much faster (e.g., 1.5 times) than the network link. You should also consider using the <strong>-B</strong> option to specify an appropriately large I/O transfer size for the device.
+    </p>
+    <p>
+      Un-buffered I/O places far more constraints on the copy than using a standard file system interface, since <strong>bbcp</strong> must be cognizant of device sectors. When <strong>-u</strong> is specified, all I/O buffers are automatically constrained to be multiples of 8K, the common restriction in many operating systems and device drivers. When <strong>-u t</strong> is specified, ordered output is enforced since many device drivers require it for new files. Even with these constraints, un-buffered I/O may still fail because either the source file is sparse (i.e., has holes) or the operating system does not adequately support "direct I/O".
+    </p>
+    <p>
+      Consequently, this option is very sensitive to the particular system configuration being used and the nature of the source file. Un-buffered I/O may, in fact, greatly decrease the data transfer rate. It should be treated with care.
+    </p>
+    <h3>
+      1.2.8 Routing (-z)
+    </h3>
+    <p>
+      Ostensibly, the <strong>-z</strong> option is used to reverse connection initiation. It is meant to get around firewall issues (see "<a href="#_Dealing_With_Firewalls">Dealing With Firewalls</a>"). However, the option may also cause the path between the source and target to use a different routing. That alone may cause a large variation in transfer speed. If you see an unexpectedly low transfer rate, and firewalls are not an issue, try the same copy with -z to see if you are experiencing routing issues.
+    </p>
+    <h2>
+      1.3 Resuming Failed Copies (-a and -k or -K)
+    </h2>
+    <p>
+      You can resume failed copies in most cases by consistently using the <strong>-a</strong> option. When <strong>-a</strong> is specified, the following occurs:
+    </p>
+    <p>
+      1) If the target file does not already exist, a new copy is initiated by
+    </p>
+    <p>
+      a. creating a checkpoint record to pair the source and target files together,
+    </p>
+    <p>
+      b. transmitting all source bytes to the target location, and
+    </p>
+    <p>
+      c. upon successful transmission of the source file, erasing the checkpoint file.
+    </p>
+    <p>
+      2) If the target file exists and is identical in size to the source file and a copy checkpoint record is not found for the file, the copy is assumed to have completed normally and the file is skipped.
+    </p>
+    <p>
+      3) If the target file is larger than the source file, is smaller in size and a checkpoint record cannot be found, or if the checkpoint record does not pair the source and target files together, <strong>bbcp</strong> terminates with an error unless <strong>-f</strong> has been specified. In this case, the file is removed, or truncated if <strong>-K</strong> has been specified, and the copy is continued as in step 1 above.
+    </p>
+    <p>
+      4) Otherwise, the copy is resumed by appending all un-transmitted source file bytes to the target file.
+    </p>
+    <p>
+      The <strong>-k</strong> option maximizes <strong>bbcp</strong>'s ability to resume failed copies. If <strong>-k</strong> is not specified and an error occurs, <strong>bbcp</strong> removes the partially transmitted file. The <strong>-a</strong> option is still useful without <strong>-k</strong>, however, <strong>bbcp</strong> will merely skip over fully copied files. Rarely will <strong>bbcp</strong> be able to resume copying where it left off. The<strong> -k</strong> option forces partially completed files to remain on disk so that a partial copy can be resumed after the fault condition that terminated the copy is corrected.
+    </p>
+    <p>
+      Proper resumption of partially transmitted files relies on a checkpoint record. By default, this record is written in the command owner's (i.e., the user running <strong>bbcp</strong>) home directory in the ".bbcp" subdirectory. This subdirectory is automatically created if it does not already exist. The file names in this subdirectory have the format
+    </p>
+    <p>
+      <strong>bbcp.</strong><em>srchost</em>.<em>trgid</em><strong>.</strong><em>trgfn</em>
+    </p>
+    <p>
+      Where <em>srchost</em> is the DNS name of the host that holds the source file, <em>trgid</em> is the unique identification of the target location, and <em>trgfn</em> is the name of the target file. The contents of the file uniquely identify the source file at <em>srchost</em>. Proper pairing requires that the conditions that created the checkpoint file are still true at the time the copy is resumed. This essentially means that the copy cannot be resumed if any changes have occurred to the source file or if the source or target files have changed location since the copy was terminated.
+    </p>
+    <p>
+      Users with home directories in <strong>AFS</strong> may wish to change the default location for checkpoint files, especially should they run in batch-mode without an <strong>AFS</strong> token. Refer to the section "Configuring New Defaults" on how to set a new default location.
+    </p>
+    <h2>
+      1.4 Multi-Directory Copying (-d)
+    </h2>
+    <p>
+      You may use <strong>bbcp</strong> to copy source files to multiple directories. The <strong>-d</strong> option enables source relative addressing that, in turn, allows multi-directory copying. The following steps are taken when you specify <strong>-d</strong> <em>path</em>:
+    </p>
+    <p>
+      1) Each relative source file specification (i.e., one that does not start with a slash) is prefixed by path. The source file must be found at the resulting location.
+    </p>
+    <p>
+      2) The file is transferred to the sink (i.e., target) host along with its associated relative path.
+    </p>
+    <p>
+      3) The sink host creates the source relative path, if it does not exist, prefixed with the path in the sink specification.
+    </p>
+    <p>
+      4) The file is then created with a file name identical to the source file name.
+    </p>
+    <p>
+      For example,
+    </p>
+    <p>
+      bbcp -d /usr/abh/data dir1/data1 dir2/data2 batch:/usr/temp
+    </p>
+    <p>
+      would copy
+    </p>
+    <p>
+      /usr/abh/data/dir1/data1 to /usr/temp/dir1/data1
+    </p>
+    <p>
+      /usr/abh/data/dir2/data2 to /usr/temp/dir2/data2
+    </p>
+    <p>
+      The directories dir1 and dir2 are automatically created starting at path /usr/temp on host batch should they not exist.
+    </p>
+    <p>
+      You may mix relative paths with absolute paths. Absolute source paths are not prefixed by the <strong>-d</strong> path and are copied to the directory identified by the sink specification.
+    </p>
+    <h2>
+      1.5 Using Pipes (-N)
+    </h2>
+    <p>
+      The <strong>-N</strong> option enables copying via a combination of named pipes or programs. The arguments to <strong>-N</strong> indicate whether the <em>source</em> (<strong>i</strong>) is a named pipe or program or the <em>target</em> (<strong>o</strong>) is a named pipe or program. When the <em>source</em> is a named pipe or program, only one <em>source</em> may be specified. Determination of whether the data source or target is a pipe or program is done at copy-time on each node. If a pipe is detected, it is treated as a regular file with no specified size.
+    </p>
+    <p>
+      If the <em>source</em> (or <em>target</em>) is not a named pipe, the file name specification is treated as an executable program. For a <em>source</em>, the program's standard out is used as the data source. For a <em>target</em>, the program's standard in is used as the data target. In short, <em>bbcp</em> starts the program(s) and uses its network infrastructure to convey the data from one node to another.
+    </p>
+    <p>
+      When the <em>target</em> is a named pipe or a program, output ordering (<strong>-o</strong>) is enforced. This comes with its own set of tuning options as described earlier in this document. Other considerations specific to named pipes or programs also apply.
+    </p>
+    <h3>
+      1.5.1 Named Pipe Considerations
+    </h3>
+    <p>
+      When a <em>source</em> or <em>target</em> is a named pipe, the following considerations should be kept in mind.
+    </p>
+    <p>
+      *As named pipes do not provide any size information, the check for sufficient space on the <em>target</em> node is not done.
+    </p>
+    <p>
+      *When a <em>source</em> named pipe indicates end-of-file (eof), it is not possible to determine whether eof was due to a failure in pipe writer. Hence, copies may appear to succeed even though the pipe writer failed.
+    </p>
+    <p>
+      *Named pipes are never automatically created; they must exist prior to starting the copy.
+    </p>
+    <p>
+      *To avoid ambiguity between named pipe names and programs, named pipe file names may not contain space characters.
+    </p>
+    <p>
+      *The <strong>bbcp</strong> process waits until a writer opens a <em>source</em> pipe, if used, and a reader opens a <em>target</em> pipe, if used.
+    </p>
+    <h3>
+      1.5.2 Program Pipe Considerations
+    </h3>
+    <p>
+      *As program pipes do not provide any size information, the check for sufficient space on the <em>target</em> node is not done.
+    </p>
+    <p>
+      *When a <em>source</em> program pipe indicates end-of-file (eof), the condition is deemed to be error-free if the program terminates with a 0 status code. Otherwise, the copy fails.
+    </p>
+    <p>
+      *When a copy ends using a target program pipe, the program must terminate with a 0 status code in order for the copy to be considered error-free. Otherwise, the copy fails.
+    </p>
+    <p>
+      *Because bbcp waits for a program pipe to finish executing with a status code of zero before declaring success; the copy does not end until the program pipe ends. This may cause time-out errors when <strong>-t</strong> is specified should the program continue execution without producing (<em>source</em>) or needing (<em>target</em>) additional data.
+    </p>
+    <p>
+      *A program pipe specification may contain arguments to the program (i.e. options, etc). Such a specification must be surrounded by quotes or spaces be escaped to be successfully transmitted to <strong>bbcp</strong>. The specification is tokenized and the program is started using <strong>execvp()</strong>. A maximum of 127 tokens are allowed and tokenization ignores quoted sub-arguments. If you need to pass more tokens or use quoted arguments, you must wrap the program with a shell script.
+    </p>
+    <p>
+      *The <strong>execvp()</strong> system call uses the setting of $PATH to find the program is an absolute path to the program is not specified. Each operating system has its own peculiarities on how $PATH is handled in such cases. Consult the <strong>execvp</strong> man page for more information.
+    </p>
+    <h3>
+      1.5.3 Using Program Pipes to Recursively Copy Small Files
+    </h3>
+    <p>
+      The <strong>-r</strong> option provides a way to recursively copy one or more directories. This tends to be very inefficient when the files are relatively small. You can use <strong>tar</strong> or <strong>gtar</strong> to dramatically speed up recursive copying because all of the source files are combined into a single stream and sent to the destination where the directory structure and files are recreated. For instance,
+    </p>
+    <p>
+      <strong>bbcp -N io &#x27;gtar -c -O -C /tmp mydir &#x27; &#x27;host:gtar -x -C /tmp/foo&#x27;</strong>
+    </p>
+    <p>
+      recursively copies the directory <strong>mydir</strong> in <strong>/tmp</strong> to <strong>host</strong> at <strong>/tmp/foo</strong>. Unlike <strong>-r</strong>, symlinks are preserved and it is possible to copy extended attributes as well. Consult the <strong>gtar</strong> man page for available options.
+    </p>
+    <h3>
+      1.5.4 Restricting Program Pipes
+    </h3>
+    <p>
+      Program pipes in essence allow a user to execute arbitrary programs on the <em>source</em> or <em>target</em> hosts. This is immaterial if the user has full login access to the hosts but does present a security issue when the <em>source</em> or <em>target</em> host is restricted via the <strong>ssh</strong> key file to a certain set of commands, including <strong>bbcp</strong> (i.e. the user does not have general login access).
+    </p>
+    <p>
+      Prior to launching a program pipe on the <em>source</em> or <em>target</em>, <strong>bbcp</strong> checks for the existence of the environmental variable <strong>BBCP_ALLOWPP</strong>. If it has not been defined, the program pipe is launched. Otherwise, <strong>bbcp</strong> performs the following actions:
+    </p>
+    <p>
+      1. If the value of the variable is '<strong>0</strong>', all program pipes are disallowed and the copy fails.
+    </p>
+    <p>
+      2. Otherwise, the variable is assumed to consist of a space separated list of allowed programs names. Each item in the list is compared with the name of the program about to be launched. If a match is found, the program is launched.
+    </p>
+    <p>
+      3. Otherwise, the user specified program pipe is disallowed and the copy fails.
+    </p>
+    <p>
+      To successfully use this scheme, the following must be true.
+    </p>
+    <p>
+      1. General login access must be prohibited to the user's account. Typically you would restrict <strong>ssh</strong> usage of the account to the '<strong>bbcp SRC</strong>' or '<strong>bbcp TRG</strong>' commands and perhaps some other select commands.
+    </p>
+    <p>
+      2. The <strong>BBCP_ALLOWPP </strong>environmental variable should be set in the user's profile (i.e. <strong>.cshrc</strong> or other login script).
+    </p>
+    <p>
+      3. If a program list is specified, the name should include variants that the user might use (e.g. gtar, /bin/gtar, etc).
+    </p>
+    <h2>
+      1.6 Real-Time Copying (-R)
+    </h2>
+    <p>
+      The <strong>-R</strong> option enables real-time copying mode. In this mode you can start copying a source file while it is still being created by another program. This allows you to implement a streaming copy model as opposed to the more traditional store-and-forward copy model. Since <strong>bbcp</strong> needs to know when the source file is complete, you must use a special file-creation protocol using file locks. Below are the arguments that you can supply to the <strong>-R</strong> option to control how real-time copying is performed. Subsequent sections provide examples.
+    </p>
+    <p>
+      <strong>-R </strong>[<em>rtargs</em>]
+    </p>
+    <p>
+      <em>rtargs</em>:<em> </em>{<strong>c=</strong><em>csec</em> | <strong>b</strong> | <strong>h</strong> | <strong>i=</strong><em>sec</em> | <strong>v</strong> | <em>lfn</em>}[<strong>,</strong><em>rtargs</em>]
+    </p>
+    <p>
+      Where:
+    </p>
+    <p>
+      <strong>c=</strong><em>c</em><em>sec </em>specifies the minimum interval between checks to see if the input file has grown to sufficient size to continue the copy. File size checks are normally minimized and few occur if the source file is created at least as fast as it can be sent to the target node. The default is 3 seconds.
+    </p>
+    <p>
+      <strong>b </strong>blockscopy until there is sufficient data in the source file to utilize all streams. By default, data is sent whenever there are sufficient bytes to send on a single stream. This option may be useful for WAN links or when the file grows relatively slowly in size.
+    </p>
+    <p>
+      <strong>h </strong>hides the file at the target node by making it inaccessible (i.e., making it write-only) until the copy completes. By default, the file is accessible on the target node while it is being created there and the s-mode bit is set while the copy is in progress to indicate the file is not yet complete.
+    </p>
+    <p>
+      <strong>i=</strong><em>i</em><em>sec </em>specifies the maximum number of seconds the source file may remain idle (i.e., not grow in size) before the copy is aborted. The default does not impose any limit.
+    </p>
+    <p>
+      <strong>v </strong>when used in conjunction with <em>lfn</em>, verifies the successful completion of the source file by checking that <em>lfn</em> is non-zero size after the lock on <em>lfn</em> is obtained. The default assumes the source file has been successfully created the moment a shared lock on <em>lfn</em> is obtained.
+    </p>
+    <p>
+      <em>lfn</em><em> </em>specifies the path to an external file to be used for locking. It must start with dot or slash. This file co-ordinates the real-time copy. The default uses the source file as the target for locking and co-ordination. See the section "<a href="#_Using_an_Alternate">Using an Alternate Lock File</a>" for more information.
+    </p>
+    <h3>
+      1.6.1 Real-Time Copy Protocol
+    </h3>
+    <p>
+      The following steps need to be followed to successfully use real-time copy mode:
+    </p>
+    <p>
+      1. An application opens the future source file in write mode and obtains an exclusive lock on the file using the <strong>fcntl()</strong> system call.
+    </p>
+    <p>
+      2. The <strong>bbcp</strong> program is launched to copy the source file with the <strong>-R</strong> option. With the <strong>-R</strong> option, <strong>bbcp</strong> opens the source file in read mode and starts the copy while simultaneously trying to obtain a shared lock on the file.
+    </p>
+    <p>
+      3. When the application is done creating the source file it must close the file. This removes the exclusive lock on the file which allows <strong>bbcp</strong> to obtain the shared lock on the file. At this point, <strong>bbcp</strong> assumes that the source file is complete and the copy continues by sending all outstanding bytes, at the time the shared lock was obtained, to the target node.
+    </p>
+    <p>
+      Below is a sample snippet of C code that illustrates what the creating application must do.
+    </p>
+    <p>
+      #include &lt;fcntl.h&gt;
+    </p>
+    <p>
+      #include &lt;unistd.h&gt;
+    </p>
+    <p>
+      #include &lt;sys/stat.h&gt;
+    </p>
+    <p>
+      #include &lt;sys/types.h&gt;
+    </p>
+    <p>
+      ----------------
+    </p>
+    <p>
+      struct flock flk;
+    </p>
+    <p>
+      int rc, srcfd;
+    </p>
+    <p>
+      ----------------
+    </p>
+    <p>
+      flk.l_type = F_WRLCK; flk.l_whence = SEEK_SET;
+    </p>
+    <p>
+      flk.l_start = 0; flk.l_len = 0;
+    </p>
+    <p>
+      ----------------
+    </p>
+    <p>
+      srcfd = open(<em>srcfn</em>, O_WRONLY|O_CREAT|O_TRUNC,0600);
+    </p>
+    <p>
+      if (srcfd &lt; 0) {/* <em>Handle </em>open<em> error</em> */}
+    </p>
+    <p>
+      do {rc = fcntl(srcfd, F_SETLKW, &amp;flk);}
+    </p>
+    <p>
+      while(rc &lt; 0 &amp;&amp; errno == EINTR);
+    </p>
+    <p>
+      if (rc &lt; 0) {/* <em>Handle </em>fcntl<em> error</em> */}
+    </p>
+    <p>
+      ----------------
+    </p>
+    <p>
+      /* bbcp can be started and the source file written */
+    </p>
+    <p>
+      <strong><em>Sample Application Code Using Source File Locking</em></strong>
+    </p>
+    <h3>
+      1.6.2 Using an Alternate Lock File
+    </h3>
+    <p>
+      The ability to specify a lock file that differs from the source file allows you to enable real-time copy mode using unmodified application as well as positively confirm that the source file was successfully created. An alternate lock name is specified as an argument to the <strong>-R</strong> option. Other than using another file for locking the real-time copy protocol steps are identical to those described in the previous section.
+    </p>
+    <p>
+      However, with an alternate lock file you can also specify the <strong>v</strong> argument with <strong>-R</strong> to indicate that <strong>bbcp</strong> must get a positive indication that the file was successfully created in order for the copy to complete. The following steps need to be followed to successfully use real-time copy mode with an alternate lock file and the <strong>v</strong> argument:
+    </p>
+    <p>
+      1. A wrapper script opens the alternate lock file in write mode, truncating to zero length, and obtains an exclusive lock on the file using the <strong>fcntl()</strong> system call.
+    </p>
+    <p>
+      2. The script launches the application that is to create the source file. The script must wait until the source file appears in the file system or the creating application fails, whichever comes first.
+    </p>
+    <p>
+      3. When the source file appears in the file system, the script launches <strong>bbcp</strong> to copy the source file with the <strong>-R</strong> option, specifying the alternate lock file name and the v argument. When launched, <strong>bbcp</strong> opens the source and lock files in read mode and starts the copy while simultaneously trying to obtain a shared lock on the alternate lock file.
+    </p>
+    <p>
+      4. The script then waits for the creating application to complete. Should the creating application end with an error, the script can exit as well. In this case, <strong>bbcp</strong> aborts the copy.
+    </p>
+    <p>
+      5. Otherwise, the script must write at least one byte into the lock file. It may then exit, implicitly closing the lock file, and let <strong>bbcp</strong> continue.
+    </p>
+    <p>
+      6. Closing the alternate lock file removes the script's exclusive lock on the file and allows <strong>bbcp</strong> to obtain the shared lock on the file.
+    </p>
+    <p>
+      7. Then, <strong>bbcp</strong> checks the size of the lock file. If it's zero, the copy is aborted. Otherwise, the copy continues by sending all outstanding bytes, at the time the shared lock was obtained, to the target node.
+    </p>
+    <p>
+      What follows is a sample snippet of <strong>perl</strong> code that illustrates what the wrapper script must do.
+    </p>
+    <pre>
+#!/bin/perl
+Use Fcntl;
+$LKfn = '/tmp/myLock';
+$LKop = pack('sslllll', F_WRLCK, 0, 0, 0, 0, 0, 0);
+----------------
+# Open lock file, truncating it to zero, and obtain lock
+#
+die "Unable to open $LKfn; $!\n"
+if !open(LKFD, "+&gt;$LKfn");
+die "Unable to lock $LKfn; $!\n"
+if !fcntl(LKFD, F_SETLKW, $LKop);
+----------------
+# Launch application and wait for it to open source file
+#
+$appPID = &amp;Launch_App_Wait_For_File();
+exit(1) if !$appPID;# Exit if application failed to launch!
+# Now launch bbcp
+#
+system('bbcp', '-R', "v,$LKfn", srcfn, trgfn);
+exit(1) if !$?;# Exit if bbcp failed to launch!
+----------------
+# Wait for application to end
+#
+exit(8) if waitpid($appPID,0) &lt;= 0;
+# Check for success (allow copy) or failure (abort copy)
+#
+print LKFD "OK" if $? == 0; # Copy will complete!
+    </pre>
+    <p>
+      <strong><em>Sample Script Using Alternate Lock File With </em>v<em> Argument</em></strong>
+    </p>
+    <h2>
+      1.7 Modifying ssh Startup (-S and -T)
+    </h2>
+    <p>
+      By default,<strong> bbcp</strong> uses <strong>ssh</strong>, as determined by your PATH environmental variable, for authentication on every host that was specified in the source and target specifications. In order to speed <strong>ssh</strong> start-up, <strong>bbcp</strong> disables <strong>ssh</strong> <strong>X11</strong> forwarding (<strong>-x</strong>), disables the forwarding of the authentication agent connection (<strong>-a</strong>), and disables the use of <strong>rsh</strong> when <strong>ssh</strong> authentication fails (<strong>-o</strong>).
+    </p>
+    <p>
+      <strong>bbcp </strong>executes a copy of itself on the sourcenode as "<strong>bbcp SRC</strong>" and a mirror copy on the target node as "<strong>bbcp SNK</strong>". Because the commands are well known, you may restrict <strong>ssh</strong> usage to exactly these commands when a password-less key-file is used to gain access to a host. The <strong>-I</strong> option provides a mechanism to specify the location of the identity file should it not reside at the default location.
+    </p>
+    <p>
+      At times, you may need to specify different commands to start <strong>bbcp</strong> on the source node, as well as the sink node. The <strong>-S</strong> and <strong>-T</strong> options allow you to do this. You may also specify the default <strong>-S</strong> and <strong>-T</strong> options using a configuration file. See "<a href="#_Configuring_New_Defaults">Configuring New Defaults</a>" for more information.
+    </p>
+    <p>
+      Because certain information needs to be substituted in the command line, <strong>bbcp</strong> defines certain character sequences to indicate the location of a substitution. These are:
+    </p>
+    <p>
+      %4 - substituted by <strong>-4</strong> if <strong>-ipv4 c</strong> is in effect,
+    </p>
+    <p>
+      %I - substituted by the <strong>-i</strong> <em>fname</em> (i.e., <strong>ssh</strong> identify file option) should one exist,
+    </p>
+    <p>
+      %H - the source or target host name, and
+    </p>
+    <p>
+      %U - the source or target user name.
+    </p>
+    <p>
+      For instance, the command
+    </p>
+    <p>
+      bbcp -S '/bin/ssh %I -l %U %H /bin/bbcp' /tmp/fn <a href="https://web.archive.org/web/20240704005220/mailto:abh@host:/tmp">abh@host:/tmp</a>
+    </p>
+    <p>
+      would start <strong>bbcp</strong> on the source node using the command
+    </p>
+    <p>
+      /bin/ssh -l abh host /usr/bin/bbcp SRC
+    </p>
+    <p>
+      Since the <strong>ssh</strong> identity file was not specified, the <strong>%I </strong>was deleted. If the identity file were specified as
+    </p>
+    <p>
+      bbcp -S '/bin/ssh %I -l %U %H /bin/bbcp' -i foo /tmp/fn <a href="https://web.archive.org/web/20240704005220/mailto:abh@host:/tmp">abh@host:/tmp</a>
+    </p>
+    <p>
+      then the command used to start <strong>bbcp</strong> on the source node would be
+    </p>
+    <p>
+      /bin/ssh -i foo -l abh host /usr/bin/bbcp SRC
+    </p>
+    <p>
+      Identical rules apply to the <strong>-T</strong> option which specifies the command to start <strong>bbcp</strong> on the sink (i.e., target) node.
+    </p>
+    <p>
+      You should also add the "<strong>-a -x -oFallBackTo Rsh=no</strong>" options to your <strong>ssh</strong> command to reduce start-up time; as well as <strong>%4</strong> if you wish to control TCP/IP protocol usage using the <strong>-ipv4</strong> option.
+    </p>
+    <h2>
+      1.8 Dealing With Firewalls (-z and -Z)
+    </h2>
+    <p>
+      <strong>bbcp</strong> is a peer-to-peer application. Mainly, this means that copies of <strong>bbcp</strong> on the source and sink nodes appear to be both client as well as server applications . This may not be possible at some sites because of firewall restrictions. Specifically, some installation may prohibit incoming TCP/IP connections at arbitrary ports.
+    </p>
+    <p>
+      Normally, <strong>bbcp</strong> source nodes will connect to their counterpart running on the target node. If the target host prohibits incoming connections, the copy will fail. However, should the source host allow arbitrary connections, you can specify the <strong>-z</strong> option. This option reverses the connection protocol so that the <strong>bbcp</strong> sink node will always try to connect to its counterpart running on the source host.
+    </p>
+    <p>
+      When the source and target nodes prohibit arbitrary connections, you will need assistance of an administrator at either node. If the <strong>--port</strong> option <strong>(-Z</strong>) is not specified, <strong>bbcp</strong> checks the /etc/services file for the existence of two services: <strong>bbcpfirst</strong> and <strong>bbcplast</strong>. The <strong>bbcpfirst</strong> service identifies the starting port number and <strong>bbcplast</strong> identifies the ending port number that can be used for incoming connections. When <strong>--port</strong> option <strong>(-Z</strong>) is not specified and neither service name can be found, <strong>bbcp</strong> resorts to using an arbitrary port number. If the services are found, <strong>bbcp</strong> restricts its port usage to one of the ports in the indicated range.
+    </p>
+    <p>
+      Ask the administrator at the source or target nodes to allow a range of well-known port numbers to be used for incoming connections (i.e., allowed to pass through the firewall). This will require that the administrator register these port numbers in the /etc/services file using the names <strong>bbcpfirst</strong> and <strong>bbcplast</strong> (the default names can be changed). Make sure that at least 8 port numbers exist in the range (more if possible). If restricted port access is only allowed in the source site, you must specify the <strong>-z</strong> option when invoking <strong>bbcp</strong>.
+    </p>
+    <h2>
+      1.9 Configuring New Defaults (-C)
+    </h2>
+    <p>
+      When starting, <strong>bbcp</strong> checks the environmental variable <strong>bbcp_CONFIGFN</strong>. When this variable is set, the contents are used as the location of the configuration file. Otherwise, <strong>bbcp</strong> looks to see if the file .bbcp.cf exists in the home directory. If it does, then this file is used as the initial configuration file. A configuration file may also be specified on the command line using the <strong>-C</strong> option. Command line configuration files are processed when they are encountered. Thus, any option specified prior to <strong>-C</strong> may be overridden by the configuration file and the file's values may be overridden by subsequent options. The <strong>-C</strong> option, when specified, should be the first option on the command line.
+    </p>
+    <p>
+      Each line in the configuration file may contain an option-value pair. The option name is identical to that specified on the command line (e.g., -a,-b, -c, etc.). The value is the value, if any, that would be specified along with the corresponding option. The only difference between options specified on the command line and those specified in the configuration file is that each option must be on a separate line and option values must <em>not</em> be quoted.
+    </p>
+    <p>
+      It is critical to remember that <strong>bbcp</strong> is a peer-to-peer application. Therefore, it can have up to three different execution locations <em>at the same time</em>: the host that initiated the <strong>bbcp</strong> command (i.e., agent), the host that holds the source data (i.e., source), and the host that is to receive the source data (i.e., target). In order to simplify the management of this environment, the configuration file is only read on the agent's host (i.e., the host that initiated the copy) and the values are transmitted to the source and target hosts.
+    </p>
+    <h2>
+      1.10 Recursive Copy Compatibility With cp &amp; scp
+    </h2>
+    <p>
+      By default, <strong>bbcp</strong> does not produce the exactly same results as <strong>cp</strong> or <strong>scp</strong> for recursive copies unless you specify the <strong>--gross</strong>, <strong>--mkdir</strong> and <strong>--symlinks follow</strong> options. Even then, differences do occur under certain conditions. For instance, if the source is a regular file and <strong>--mkdir</strong> <em>and</em> <strong>--recursive</strong> are in effect, a directory is created and the file is copied into that directory should the directory does not exist. Otherwise, handling is the same.
+    </p>
+    <h2>
+      1.11 New Features
+    </h2>
+    <p>
+      Version <strong>15.02.03.00.2</strong> of documented here has the following new feature:
+    </p>
+    <p>
+      *The new <strong>-read</strong>able option forces <strong>bbcp</strong> to ignore unreadable files and unsearchable directories when performing a recursive copy.
+    </p>
+    <p>
+      Version <strong>14.09.02.00.0</strong> of documented here has the following new feature:
+    </p>
+    <p>
+      *The new <strong>-pt</strong>ime option forces <strong>bbcp</strong> to preserve only source file's access and modification time at the destination; leaving the group and mode unchanged.
+    </p>
+    <p>
+      Version <strong>14.07.01.00.0</strong> of documented here has the following new features:
+    </p>
+    <p>
+      *The new <strong>-gross</strong> option forces <strong>bbcp</strong> to copy empty directory structures in recursive mode.
+    </p>
+    <p>
+      *The new <strong>-mkdir</strong> option creates the destination directory for a recursive copy should it not exist.
+    </p>
+    <p>
+      *The new <strong>-symlinks</strong> option specifies how symbolic links are to be handled during a recursive copy.
+    </p>
+    <p>
+      Version <strong>14.04.14.00.0</strong> of documented here has the following new features:
+    </p>
+    <p>
+      *Dual stack <strong>IPv6</strong> mode is fully functional and is the default mode of operation. The new <strong>-ipv4</strong> option forces <strong>bbcp</strong> to use the <strong>IPv4</strong> <strong>TCP</strong> stack.
+    </p>
+    <p>
+      *The new <strong>-license</strong> option prints the license under which <strong>bbcp</strong> is distributed.
+    </p>
+    <p>
+      *The new <strong>-version</strong> option displays <strong>bbcp</strong>'s version number installed on the current host.
+    </p>
+    <p>
+      *The <strong>BBCP_ALLOWPP</strong> environmental variable may be used to restrict program pipes to a specified set of programs or disable the feature altogether.
+    </p>
+    <p>
+      Version <strong>12.08.17.00.0</strong> of <strong>bbcp</strong> documented here has the following new feature:
+    </p>
+    <p>
+      *The new <strong>-Z</strong> option allows you to specify the port range to be used for incoming connections on the command line instead of relying on /etc/services to contain those values.
+    </p>
+    <p>
+      Version <strong>12.01.30.00.0</strong> of <strong>bbcp</strong> documented here has the following new feature:
+    </p>
+    <p>
+      *The new <strong>-N</strong> option allows you to specify that the source or destination (or both) is a named or program pipe.
+    </p>
+    <p>
+      *The new <strong>-y</strong> option allows you to make sure that data and, optionally, inodes are fully written to disk before the output file is closed.
+    </p>
+    <p>
+      *This version of <strong>bbcp</strong> follows the documented behavior of <strong>-r</strong> where symlinks are ignored.
+    </p>
+    <p>
+      *Most options now accept a long form that is more descriptive.
+    </p>
+    <p>
+      Version <strong>10.08.13.01.0</strong> of <strong>bbcp</strong> documented here has the following new feature:
+    </p>
+    <p>
+      *The new <strong>-O</strong> option allows one to omit files that already exist on the target node. This is particularly useful with <strong>-r</strong>.
+    </p>
+    <p>
+      *The new <strong>-R</strong> option enables real-time copy mode.
+    </p>
+    <p>
+      Version <strong>10.08.04.00.0</strong> of <strong>bbcp</strong> documented here has the following new features:
+    </p>
+    <p>
+      *The <strong>-a</strong> option is no longer mutually exclusive with <strong>-f</strong> or <strong>-K</strong>. Instead, when <strong>-a</strong> is specified together with <strong>-f</strong> or <strong>-K</strong> , the latter option is applies if the file cannot be appended to. This allows a file copy to restart from scratch if an append copy cannot be executed.
+    </p>
+    <p>
+      *The <strong>-m</strong> option has been extended to allow the specification of a directory mode to be used when directories are created.
+    </p>
+    <p>
+      Version <strong>10.07.26.00.0</strong> of <strong>bbcp</strong> introduced the following new features:
+    </p>
+    <p>
+      *Window auto-tuning is now supported as the default. The <strong>-w</strong> option supports a mechanism to defeat auto-tuning when so desired.
+    </p>
+    <p>
+      *<strong>-B</strong> option now defines the overall I/O size and is not tied to the <strong>-c</strong> option.
+    </p>
+    <p>
+      *<strong>-b +</strong> option allows adding more output buffers to prevent stalls when <strong>-o</strong> has been specified or forced.
+    </p>
+    <p>
+      *<strong>-E</strong> option that allows extensive checksum checking and reporting.
+    </p>
+    <p>
+      *<strong>-K</strong> option that removes some restrictions of the <strong>-k</strong> option in order to handle pre-created symbolic links.
+    </p>
+    <p>
+      *<strong>-u</strong> option to specify un-buffered (i.e., direct) I/O at the source or target.
+    </p>
+    <p>
+      *The default window size has been increased to 128K for improved performance on most current operating systems.
+    </p>
+    <p>
+      *Recursive name space indexing now happens in the background. This allows large name spaces to be traversed without timing out the copy.
+    </p>
+    <h2>
+      1.12 Backward Compatibility
+    </h2>
+    <p>
+      Version <strong>15.02.03.00.1</strong> of <strong>bbcp</strong> documented here is backward compatible with the following caveat:
+    </p>
+    <p>
+      *Older version will fail if the new option: <strong>-read</strong>able is specified.
+    </p>
+    <p>
+      Version <strong>14.09.02.00.0</strong> of <strong>bbcp</strong> documented here is backward compatible with the following caveat:
+    </p>
+    <p>
+      *Older version will fail if any of the new option: <strong>-ptime is</strong> specified.
+    </p>
+    <p>
+      Version <strong>14.07.01.00.0</strong> of <strong>bbcp</strong> documented here is backward compatible with the following caveat:
+    </p>
+    <p>
+      *Older version will fail if any of the new options: <strong>-gross</strong>,<strong> --mkdir</strong>,or<strong> --symlinks </strong>is specified.
+    </p>
+    <p>
+      Version <strong>14.04.11.00.0</strong> of <strong>bbcp</strong> documented here is backward compatible with the following caveat:
+    </p>
+    <p>
+      *Older version will fail if the new <strong>-ipv4</strong> option is specified. Older versions always use the <strong>IPv4</strong> <strong>TCP</strong> stack, making the option generally unnecessary.
+    </p>
+    <p>
+      Version <strong>12.08.17.00.0</strong> of <strong>bbcp</strong> documented here is backward compatible with the following caveat:
+    </p>
+    <p>
+      *Older versions will fail if the new <strong>-Z</strong> optionis specified.
+    </p>
+    <p>
+      Version <strong>12.01.30.00.0</strong> of <strong>bbcp</strong> documented here is backward compatible with the following caveat:
+    </p>
+    <p>
+      *Older versions will fail if the new <strong>-N</strong> or <strong>-y</strong> optionsare specified.
+    </p>
+    <p>
+      *This version is incompatible because in that it follows documented behavior and ignores symlinks when doing a recursive copy. Previous versions copy the symlink target as a data file.
+    </p>
+    <p>
+      Version <strong>10.08.13.01.0</strong> of <strong>bbcp</strong> documented here is backward compatible with the following caveat:
+    </p>
+    <p>
+      *Older versions will fail if the new <strong>-O</strong> or <strong>-R </strong>optionsare specified.
+    </p>
+    <p>
+      Version <strong>10.08.04.00.0</strong> of <strong>bbcp</strong> documented here is backward compatible with the following caveats:
+    </p>
+    <p>
+      *Older version will fail if <strong>-a </strong>is combined with, <strong>-f</strong> or <strong>-K</strong>.
+    </p>
+    <p>
+      *Older version will fail if a directory mode is specified with the <strong>-m</strong> option.
+    </p>
+    <p>
+      Version <strong>10.07.26.00.0</strong> of <strong>bbcp</strong> is backward compatible with the following caveats:
+    </p>
+    <p>
+      *Older version will fail if <strong>-E</strong>, <strong>-K</strong>, <strong>-u</strong> , or '<strong>-w</strong> <strong>=</strong>' is specified. These are new options.
+    </p>
+    <p>
+      *The <strong>-b +</strong> option is converted to <strong>-b</strong> by older versions. While the conversion is compatible, performance characteristics are not comparable.
+    </p>
+    <p>
+      *The default window size has been increased to 128K. This generally increases performance on today's systems. However, this is incompatible with defective routers and packet firewalls that rewrite the window scaling factor during transmission. When this happens, poor and erratic bandwidth utilization will result. Should you see this, revert to using the old default of 64K.
+    </p>
+    <p>
+      *The <strong>-W</strong> option is deprecated but still accepted. However, it has now the same meaning as <strong>-w</strong>.
+    </p>
+    <p>
+      *The format and information provided by the <strong>-v</strong> option (verbose) has changed.
+    </p>
+    <h2>
+      1.13 Problem Reports &amp; Enhancement Requests
+    </h2>
+    <p>
+      Please direct all problem reports, modifications, and requests for enhancements to:
+    </p>
+    <p>
+      Andrew Hanushevsky <a href="https://web.archive.org/web/20240704005220/mailto:abh@stanford.edu">abh@stanford.edu</a>
+    </p>
+    <h2>
+      1.14 Downloading
+    </h2>
+    <p>
+      First, please read the <a href="https://web.archive.org/web/20240704005220/http://www.slac.stanford.edu/~abh/bbcp/Legal_Notice.htm">legal notice</a> (see below). <em>Use of this software implies that you have read and agreed to all of the terms and conditions for use.</em>
+    </p>
+    <p>
+      You can download one or more of the following <strong>bbcp</strong> binary executables at
+    </p>
+    <p>
+      <a href="https://web.archive.org/web/20240704005220/http://www.slac.stanford.edu/~abh/bbcp/bin/">http://www.slac.stanford.edu/~abh/bbcp/bin/</a>
+    </p>
+    <p>
+      Once in the bin directory, you will find platform-specific directories that contain the bbcp binary. The program may or may not work in other versions of the same operating system. Should you run into trouble or wish to extend the range of operating systems available, feel free to clone the git archive:
+    </p>
+    <p>
+      <strong>git clone http://www.slac.stanford.edu/~abh/bbcp/bbcp.git</strong>
+    </p>
+    <p>
+      and send back any required modification as git patches.
+    </p>
+    <h2>
+      1.15 Legal Notice
+    </h2>
+    <p>
+      Copyright (c) 2002-2014, Board of Trustees of the Leland Stanford, Jr. University.
+    </p>
+    <p>
+      Produced under contract DE-AC02-76-SF00515 with the US Department of Energy.
+    </p>
+    <p>
+      All rights reserved.
+    </p>
+    <p>
+      <strong>bbcp</strong> is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+    </p>
+    <p>
+      <strong>bbcp</strong> is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+    </p>
+    <p>
+      You should have received a copy of the GNU Lesser General Public License along with <strong>bbcp</strong> in a file called COPYING.LESSER (LGPL license) and file COPYING (GPL license). If not, see &lt;<a href="https://web.archive.org/web/20240704005220/http://www.gnu.org/licenses">http://www.gnu.org/licenses</a>&gt;.
+    </p>
+    <p>
+      Copies of <strong>bbcp</strong> that are not <strong>IPv6</strong> enabled (i.e. versions prior to <strong>14.04.14.00.0</strong>) were distributed under a modified <strong>BSD</strong> license. All <strong>IPv6</strong> enabled version of <strong>bbcp</strong> (i.e. version <strong>14.04.11.00.0</strong> and any subsequent version) are distributed under an <strong>LGL</strong> license.
+    </p>
+    </article>
+  </body>
+</html>
